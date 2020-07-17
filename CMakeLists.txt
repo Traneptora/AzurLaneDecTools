@@ -16,7 +16,7 @@ target_link_directories(bcDec PUBLIC ${Boost_LIBRARY_DIRS} ${PROJECT_SOURCE_DIR}
 IF( MSVC )
 add_custom_command(TARGET bcDec PRE_BUILD
 COMMAND cd /d ${PROJECT_SOURCE_DIR}/src
-COMMAND ${PROJECT_SOURCE_DIR}/src/msvcbuild.bat static
+COMMAND msvcbuild.bat static
 COMMAND cd /d ${PROJECT_SOURCE_DIR}
 )
 target_link_libraries(bcDec lua51)
