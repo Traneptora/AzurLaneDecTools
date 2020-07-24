@@ -27,6 +27,41 @@
 #include <tmmintrin.h>
 #include "defs.h"
 
+#ifdef _WIN32
+typedef __m128 vec4;
+typedef __m128i vec4i;
+typedef __m128d vec4d;
+#else
+typedef union vec4 {
+    float m128_f32[4];
+    uint64_t m128_u64[2];
+    int8_t m128_i8[16];
+    int16_t m128_i16[8];
+    int32_t m128_i32[4];
+    int64_t m128_i64[2];
+    uint8_t m128_u8[16];
+    uint16_t m128_u16[8];
+    uint32_t m128_u32[4];
+    __m128 m128;
+} vec4;
+typedef union vec4i {
+    uint64_t m128i_u64[2];
+    int8_t m128i_i8[16];
+    int16_t m128i_i16[8];
+    int32_t m128i_i32[4];
+    int64_t m128i_i64[2];
+    uint8_t m128i_u8[16];
+    uint16_t m128i_u16[8];
+    uint32_t m128i_u32[4];
+    __m128i m128i;
+} vec4i;
+
+typedef union vec4d {
+    double m128d_f64[2];
+    __m128d m128d;
+} vec4d;
+#endif
+
 /* Reuse some lexer fields for our own purposes. */
 #define bcread_flags(ls)	ls->level
 #define bcread_swap(ls) \
@@ -376,16 +411,16 @@ void bcread_dbg_mod (unsigned int ls, int pt, unsigned int sizedbg)
 {
 	unsigned int v3; // ecx
 	char *v4; // esi
-	__m128i *v5; // ebp
+	vec4i *v5; // ebp
 	int v6; // edi
 	int v7; // edx
 	unsigned int v8; // ecx
 	unsigned int v9; // esi
-	const __m128i *v10; // edx
+	const vec4i *v10; // edx
 	unsigned int v11; // edi
-	__m128i v12; // xmm4
-	__m128i v13; // xmm3
-	__m128i v14; // xmm0
+	vec4i v12; // xmm4
+	vec4i v13; // xmm3
+	vec4i v14; // xmm0
 	int v15; // edx
 	_WORD *v16; // edx
 	int v17; // edx
@@ -395,13 +430,14 @@ void bcread_dbg_mod (unsigned int ls, int pt, unsigned int sizedbg)
 	__int16 v21; // dx
 	int v22; // [esp-20h] [ebp-20h]
 
-	__m128i xmmword_9B0B0 = _mm_set_epi8(0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x0D, 0x0C, 0x09, 0x08, 0x05, 0x04, 0x01, 0x00);
-	__m128i xmmword_9B0C0 = _mm_set_epi8(0x0D, 0x0C, 0x09, 0x08, 0x05, 0x04, 0x01, 0x00, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80);
-
+	vec4i xmmword_9B0B0;
+    xmmword_9B0B0.m128i = _mm_set_epi8(0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x0D, 0x0C, 0x09, 0x08, 0x05, 0x04, 0x01, 0x00);
+	vec4i xmmword_9B0C0;
+    xmmword_9B0C0.m128i = _mm_set_epi8(0x0D, 0x0C, 0x09, 0x08, 0x05, 0x04, 0x01, 0x00, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80);
 
 	v3 = sizedbg;
 	v4 = *(char **)(ls + 24);
-	v5 = *(__m128i **)(pt + 52);
+	v5 = *(vec4i **)(pt + 52);
 	*(char **)(ls + 24) = &v4[sizedbg];
 	v6 = (int)v5;
 	v22 = pt;
@@ -448,10 +484,10 @@ void bcread_dbg_mod (unsigned int ls, int pt, unsigned int sizedbg)
 					do
 					{
 						v19 = v5->m128i_i32[0];
-						v5 = (__m128i *)((char *)v5 + 4);
+						v5 = (vec4i *)((char *)v5 + 4);
 						ls = _byteswap_ulong(v19);
 						v5[-1].m128i_i32[3] = ls;
-					} while (v5 != (__m128i *)v18);
+					} while (v5 != (vec4i *)v18);
 				}
 			}
 			else
@@ -472,16 +508,16 @@ void bcread_dbg_mod (unsigned int ls, int pt, unsigned int sizedbg)
 					v13 = xmmword_9B0C0;
 					do
 					{
-						v14 = _mm_loadu_si128(v10);
+						v14.m128i = _mm_loadu_si128(&(v10->m128i));
 						++v11;
 						++v10;
 						_mm_storeu_si128(
-							(__m128i *)&v10[-1],
+							(vec4i *)&v10[-1],
 							_mm_or_si128(
-								_mm_srli_epi16(v14, 8u),
+								_mm_srli_epi16(v14.m128i, 8u),
 								_mm_or_si128(
-									_mm_shuffle_epi8(_mm_slli_epi32(_mm_unpackhi_epi16(v14, _mm_setzero_si128()), 8u), v13),
-									_mm_shuffle_epi8(_mm_slli_epi32(_mm_unpacklo_epi16(v14, _mm_setzero_si128()), 8u), v12))));
+									_mm_shuffle_epi8(_mm_slli_epi32(_mm_unpackhi_epi16(v14.m128i, _mm_setzero_si128()), 8u), v13.m128i),
+									_mm_shuffle_epi8(_mm_slli_epi32(_mm_unpacklo_epi16(v14.m128i, _mm_setzero_si128()), 8u), v12.m128i))));
 					} while (v9 > v11);
 					if (v8 == ls)
 						return;
@@ -632,15 +668,15 @@ static void bcread_kgc(LexState *ls, GCproto *pt, MSize sizekgc)
 	}
 }
 
-static __m128i xmmword_9B270;
-static __m128i xmmword_9B290;
-static __m128i xmmword_9B0C0;
-static __m128i xmmword_9B0B0;
-static __m128i xmmword_9B0D0;
-static __m128i xmmword_9B030;
-static __m128i xmmword_9B2A0;
-static __m128i xmmword_9B280;
-static __m128i xmmword_9B2B0;
+static vec4i xmmword_9B270;
+static vec4i xmmword_9B290;
+static vec4i xmmword_9B0C0;
+static vec4i xmmword_9B0B0;
+static vec4i xmmword_9B0D0;
+static vec4i xmmword_9B030;
+static vec4i xmmword_9B2A0;
+static vec4i xmmword_9B280;
+static vec4i xmmword_9B2B0;
 
 int bcread_kgc_mod(int ls, int pt, int sizekgc)
 {
@@ -649,11 +685,11 @@ int bcread_kgc_mod(int ls, int pt, int sizekgc)
 	char *v5; // esi
 	size_t len; // ecx
 	unsigned int v7; // edi
-	__m128i v8; // xmm2
+	vec4i v8; // xmm2
 	unsigned int v9; // eax
 	unsigned int v10; // ecx
-	__m128i v11; // xmm0
-	__m128i v12; // xmm1
+	vec4i v11; // xmm0
+	vec4i v12; // xmm1
 	unsigned int v13; // edx
 	__int16 v14; // si
 	int v15; // edi
@@ -684,15 +720,15 @@ int bcread_kgc_mod(int ls, int pt, int sizekgc)
 	uint64_t v40; // [esp-24h] [ebp-24h]
 
 
-	 xmmword_9B270 = _mm_set_epi8(0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00);
-	 xmmword_9B290 = _mm_set_epi8(0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x04);
-	 xmmword_9B0C0 = _mm_set_epi8(0x0D, 0x0C, 0x09, 0x08, 0x05, 0x04, 0x01, 0x00, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80);
-	 xmmword_9B0B0 = _mm_set_epi8(0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x0D, 0x0C, 0x09, 0x08, 0x05, 0x04, 0x01, 0x00);
-	 xmmword_9B0D0 = _mm_set_epi8(0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF);
-	 xmmword_9B030 = _mm_set_epi8(0x00, 0x00, 0x00, 0x0C, 0x00, 0x00, 0x00, 0x0C, 0x00, 0x00, 0x00, 0x0C, 0x00, 0x00, 0x00, 0x0C);
-	 xmmword_9B2A0 = _mm_set_epi8(0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x08);
-	 xmmword_9B280 = _mm_set_epi8(0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x10);
-	 xmmword_9B2B0 = _mm_set_epi8(0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
+	 xmmword_9B270.m128i = _mm_set_epi8(0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00);
+	 xmmword_9B290.m128i = _mm_set_epi8(0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x04);
+	 xmmword_9B0C0.m128i = _mm_set_epi8(0x0D, 0x0C, 0x09, 0x08, 0x05, 0x04, 0x01, 0x00, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80);
+	 xmmword_9B0B0.m128i = _mm_set_epi8(0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x0D, 0x0C, 0x09, 0x08, 0x05, 0x04, 0x01, 0x00);
+	 xmmword_9B0D0.m128i = _mm_set_epi8(0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF);
+	 xmmword_9B030.m128i = _mm_set_epi8(0x00, 0x00, 0x00, 0x0C, 0x00, 0x00, 0x00, 0x0C, 0x00, 0x00, 0x00, 0x0C, 0x00, 0x00, 0x00, 0x0C);
+	 xmmword_9B2A0.m128i = _mm_set_epi8(0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x08);
+	 xmmword_9B280.m128i = _mm_set_epi8(0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x10);
+	 xmmword_9B2B0.m128i = _mm_set_epi8(0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF);
 
 	v35 = pt - 4 * sizekgc;
 	v34 = (char **)(ls + 24);
@@ -782,24 +818,24 @@ int bcread_kgc_mod(int ls, int pt, int sizekgc)
 					do
 					{
 						v10 = v9++;
-						v11 = _mm_and_si128(
+						v11.m128i = _mm_and_si128(
 							_mm_or_si128(
 								_mm_shuffle_epi8(
-									_mm_add_epi32(xmmword_9B290, v8), xmmword_9B0C0),
-								_mm_shuffle_epi8(v8, xmmword_9B0B0)),
-							xmmword_9B0D0);
-						v12 = _mm_or_si128(
+									_mm_add_epi32(xmmword_9B290.m128i, v8.m128i), xmmword_9B0C0.m128i),
+								_mm_shuffle_epi8(v8.m128i, xmmword_9B0B0.m128i)),
+							xmmword_9B0D0.m128i);
+						v12.m128i = _mm_or_si128(
 							_mm_shuffle_epi8(
-								_mm_add_epi32(xmmword_9B030, v8), xmmword_9B0C0),
+								_mm_add_epi32(xmmword_9B030.m128i, v8.m128i), xmmword_9B0C0.m128i),
 							_mm_shuffle_epi8(
-								_mm_add_epi32(xmmword_9B2A0, v8), xmmword_9B0B0));
-						v8 = _mm_add_epi32(v8, xmmword_9B280);
+								_mm_add_epi32(xmmword_9B2A0.m128i, v8.m128i), xmmword_9B0B0.m128i));
+						v8.m128i = _mm_add_epi32(v8.m128i, xmmword_9B280.m128i);
 						_mm_storeu_si128(
-							(__m128i *)&v5[16 * v10],
+							(vec4i *)&v5[16 * v10],
 							_mm_xor_si128(
 								_mm_xor_si128(
-									_mm_packus_epi16(v11, _mm_and_si128(v12, xmmword_9B0D0)),
-									_mm_loadu_si128((const __m128i *)&v5[16 * v10])), xmmword_9B2B0));
+									_mm_packus_epi16(v11.m128i, _mm_and_si128(v12.m128i, xmmword_9B0D0.m128i)),
+									_mm_loadu_si128((const vec4i *)&v5[16 * v10])), xmmword_9B2B0.m128i));
 					} while (v7 > v9);
 					len = v37;
 					v13 = 16 * v7;
@@ -1030,17 +1066,17 @@ static void bcread_uv(LexState *ls, GCproto *pt, MSize sizeuv)
 	}
 }
 
-void bcread_uv_mod(unsigned int ls, __m128i **pt, unsigned int sizeuv)
+void bcread_uv_mod(unsigned int ls, vec4i **pt, unsigned int sizeuv)
 {
 	char *v3; // esi
-	__m128i *v4; // edx
+	vec4i *v4; // edx
 	int v5; // edi
 	unsigned int v6; // ecx
-	const __m128i *v7; // esi
+	const vec4i *v7; // esi
 	unsigned int v8; // edi
-	__m128i v9; // xmm4
-	__m128i v10; // xmm3
-	__m128i v11; // xmm0
+	vec4i v9; // xmm4
+	vec4i v10; // xmm3
+	vec4i v11; // xmm0
 	_WORD *v12; // esi
 	_WORD *v13; // edx
 	int v14; // ecx
@@ -1093,20 +1129,20 @@ void bcread_uv_mod(unsigned int ls, __m128i **pt, unsigned int sizeuv)
 		{
 			v7 = v4;
 			v8 = 0;
-			v9 = _mm_set_epi8(0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x0D, 0x0C, 0x09, 0x08, 0x05, 0x04, 0x01, 0x00);
-			v10 = _mm_set_epi8(0x0D, 0x0C, 0x09, 0x08, 0x05, 0x04, 0x01, 0x00, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80);
+			v9.m128i = _mm_set_epi8(0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x0D, 0x0C, 0x09, 0x08, 0x05, 0x04, 0x01, 0x00);
+			v10.m128i = _mm_set_epi8(0x0D, 0x0C, 0x09, 0x08, 0x05, 0x04, 0x01, 0x00, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80);
 			do
 			{
-				v11 = _mm_loadu_si128(v7);
+				v11.m128i = _mm_loadu_si128(&(v7->m128i));
 				++v8;
 				++v7;
 				_mm_storeu_si128(
-					(__m128i *)&v7[-1],
+					(vec4i *)&v7[-1],
 					_mm_or_si128(
-						_mm_srli_epi16(v11, 8u),
+						_mm_srli_epi16(v11.m128i, 8u),
 						_mm_or_si128(
-							_mm_shuffle_epi8(_mm_slli_epi32(_mm_unpackhi_epi16(v11, _mm_setzero_si128()), 8u), v10),
-							_mm_shuffle_epi8(_mm_slli_epi32(_mm_unpacklo_epi16(v11, _mm_setzero_si128()), 8u), v9))));
+							_mm_shuffle_epi8(_mm_slli_epi32(_mm_unpackhi_epi16(v11.m128i, _mm_setzero_si128()), 8u), v10.m128i),
+							_mm_shuffle_epi8(_mm_slli_epi32(_mm_unpacklo_epi16(v11.m128i, _mm_setzero_si128()), 8u), v9.m128i))));
 			} while (v6 > v8);
 			if (sizeuv == ls)
 				return;
@@ -1525,7 +1561,7 @@ int lj_bcread_mod(int ls)
 		*(_DWORD *)(pt + 40) = *(_DWORD *)(ls + 76);// setgcref(pt->chunkname, obj2gco(ls->chunkname));
 		*(_DWORD *)(pt + ofsk - (4 * sizekgc + 4)) = 0;// *(uint32_t *)((char *)pt + ofsk - sizeof(GCRef)*(sizekgc+1)) = 0;
 		if (sizeuv)                               // bcread_uv()
-			bcread_uv_mod(ls, (__m128i **)(pt + 20), sizeuv);
+			bcread_uv_mod(ls, (vec4i **)(pt + 20), sizeuv);
 		v25 = *(__int16 **)(ls + 24);
 		*(_DWORD *)(pt_ + 64) = ((*(_BYTE *)(pt_ + 37) & 2u) < 1 ? 89 : 92) | (*(unsigned __int8 *)(pt_ + 7) << 8);
 		v26 = 4 * v67;
