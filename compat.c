@@ -1,9 +1,12 @@
 #include <byteswap.h>
 #include <stdint.h>
+#include "compat.h"
 
 #ifdef __CPLUSPLUS
 extern "C" {
 #endif // __CPLUSPLUS
+
+#ifndef _WIN32
 
 unsigned long _byteswap_ulong(unsigned long x){
     return bswap_64(x);
@@ -23,6 +26,8 @@ unsigned char _BitScanReverse(unsigned long *index, unsigned long mask){
     }
     
 }
+
+#endif // _WIN32
 
 #ifdef __CPLUSPLUS
 }
