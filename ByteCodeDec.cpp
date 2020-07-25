@@ -1,6 +1,4 @@
-﻿
-#include "ByteCodeDec.h"
-
+﻿#include "ByteCodeDec.h"
 
 int writer_buf(lua_State *L, const void *p, size_t size, void *sb)
 {

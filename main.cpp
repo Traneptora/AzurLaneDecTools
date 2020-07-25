@@ -1,6 +1,5 @@
 #include "ByteCodeDec.h"
 
-
 int main(int _argc, char **_argv)
 {
 	lua_State *L = lua_open();
