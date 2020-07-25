@@ -4,23 +4,26 @@ RANLIB=ranlib
 LUAJIT_A=libluajit.a
 INCLUDES=-Isrc
 
-all: bcdec
+all: uabdec bcdec
 
 libluajit.a:
 	$(MAKE) -C src $(LUAJIT_A)
 	cp src/$(LUAJIT_A) ./
 	$(RANLIB) $(LUAJIT_A)
 
+uabdec: uabdec.o AssetDecoder.o
+	$(CXX) -o uabdec uabdec.o AssetDecoder.o
+
 bcdec: libluajit.a compat.o bcdec.o ByteCodeDec.o
-	$(CXX) -std=c++17 -o bcdec bcdec.o ByteCodeDec.o compat.o  -L. -lluajit -ldl -latomic
+	$(CXX) -o bcdec bcdec.o ByteCodeDec.o compat.o -L. -lluajit -ldl -latomic
 
 %.o: %.c
-	$(CC) -c -o $@ $< $(INCLUDES)
+	$(CC)  -c -o $@ $< $(INCLUDES)
 %.o: %.cpp
 	$(CXX) -c -o $@ $< $(INCLUDES)
 
 clean:
-	rm -f -- bcdec libluajit.a compat.o
+	rm -f -- bcdec uabdec libluajit.a *.o
 	$(MAKE) -C src clean
 
 .PHONY: all clean
