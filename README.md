@@ -45,7 +45,7 @@ $ find lualj/ -name '*.lua.lj' | parallel luajit-decompiler --file={} --output=l
 This should produce several lua files in `lua-sauce`. Behold:
 
 ```
-$ head luasauce/ship_data_statistics.lua 
+$ head lua-sauce/ship_data_statistics.lua 
 pg = pg or {}
 pg.ship_data_statistics = {
     [100001] = {
