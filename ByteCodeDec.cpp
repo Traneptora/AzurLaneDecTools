@@ -43,9 +43,9 @@ exit:
 	return bSuccess;
 }
 
-void DecFileTo_Impl(lua_State* L, const boost::filesystem::path& _Inpath, const char* _OutputDir)
+void DecFileTo_Impl(lua_State* L, const std::filesystem::path& _Inpath, const char* _OutputDir)
 {
-	boost::filesystem::path OutFileName(_OutputDir);
+	std::filesystem::path OutFileName(_OutputDir);
 	OutFileName.append(_Inpath.filename().stem().string());
 	std::string OutPath(OutFileName.string().c_str());
 	OutPath.append(".lj");
@@ -56,20 +56,20 @@ void DecFileTo_Impl(lua_State* L, const boost::filesystem::path& _Inpath, const 
 
 void DecSingle(lua_State* L, const char* _InputFilePath, const char* _OutputDir)
 {
-	boost::filesystem::path inpath(_InputFilePath);
-	boost::filesystem::create_directories(_OutputDir);
+	std::filesystem::path inpath(_InputFilePath);
+	std::filesystem::create_directories(_OutputDir);
 	DecFileTo_Impl(L, inpath, _OutputDir);
 }
 
 void DecDirectory(lua_State* L, const char* _InputDir, const char* _OutputDir)
 {
-	boost::filesystem::create_directories(_OutputDir);
-	boost::filesystem::directory_iterator dir(_InputDir);
-	boost::filesystem::directory_iterator dir_end;
+	std::filesystem::create_directories(_OutputDir);
+	std::filesystem::directory_iterator dir(_InputDir);
+	std::filesystem::directory_iterator dir_end;
 
 	for (; dir != dir_end; ++dir)
 	{
-		if (dir->status().type() == boost::filesystem::file_type::regular_file)
+		if (dir->status().type() == std::filesystem::file_type::regular)
 		{
 			DecFileTo_Impl(L, dir->path(), _OutputDir);
 		}

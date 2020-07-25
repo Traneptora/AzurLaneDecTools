@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <fstream>
 #include <iostream>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include "lua.h"
 #include "lauxlib.h"

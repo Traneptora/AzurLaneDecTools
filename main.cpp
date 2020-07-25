@@ -9,20 +9,20 @@ int main(int _argc, char **_argv)
 	{
 	case 2:
 	{
-		if (!boost::filesystem::exists(_argv[1]))
+		if (!std::filesystem::exists(_argv[1]))
 		{
 			std::cout << "Invalid input path." << std::endl;
 			break;
 		}
-		if (boost::filesystem::is_directory(_argv[1]))
+		if (std::filesystem::is_directory(_argv[1]))
 		{
-			boost::filesystem::path outdir(_argv[1]);
+			std::filesystem::path outdir(_argv[1]);
 			outdir.append("dec");
 			DecDirectory(L, _argv[1], outdir.string().c_str());
 		}
 		else
 		{
-			boost::filesystem::path outdir(_argv[1]);
+			std::filesystem::path outdir(_argv[1]);
 			outdir = outdir.parent_path().append("dec");
 			DecSingle(L, _argv[1], outdir.string().c_str());
 		}
@@ -31,13 +31,13 @@ int main(int _argc, char **_argv)
 	}
 	case 3:
 	{
-		if (!boost::filesystem::exists(_argv[1]))
+		if (!std::filesystem::exists(_argv[1]))
 		{
 			std::cout << "Invalid input path." << std::endl;
 			break;
 		}
 
-		if (boost::filesystem::is_directory(_argv[1]))
+		if (std::filesystem::is_directory(_argv[1]))
 		{
 			DecDirectory(L, _argv[1], _argv[2]);
 		}
