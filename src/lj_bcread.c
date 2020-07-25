@@ -27,11 +27,6 @@
 #include <tmmintrin.h>
 #include "defs.h"
 
-#ifdef _WIN32
-typedef __m128 vec4;
-typedef __m128i vec4i;
-typedef __m128d vec4d;
-#else
 typedef union vec4 {
     float m128_f32[4];
     uint64_t m128_u64[2];
@@ -60,7 +55,6 @@ typedef union vec4d {
     double m128d_f64[2];
     __m128d m128d;
 } vec4d;
-#endif
 
 /* Reuse some lexer fields for our own purposes. */
 #define bcread_flags(ls)	ls->level
